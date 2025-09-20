@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fundamental1/model/model.dart';
 import 'package:fundamental1/screen/home/detail_screen.dart';
 import 'package:fundamental1/screen/home/home_screen.dart';
+import 'package:fundamental1/style/theme.dart';
 void main() {
  runApp(const MyApp());
 }
@@ -13,10 +14,9 @@ class MyApp extends StatelessWidget {
  Widget build(BuildContext context) {
    return MaterialApp(
      title: 'Flutter Demo',
-     theme: ThemeData(
-       colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-       useMaterial3: true,
-     ),
+     theme: TurisTheme.lightTheme,
+     darkTheme: TurisTheme.darkTheme,
+     themeMode: ThemeMode.system,
      initialRoute: "/",
      routes: {
       "/":(context) => const Homescreen(),
