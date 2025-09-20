@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fundamental1/static/route.dart';
 import 'card_turis_widget.dart';
 import 'package:fundamental1/model/model.dart';
 class Homescreen extends StatelessWidget {
@@ -17,7 +18,9 @@ class Homescreen extends StatelessWidget {
         itemBuilder: (context, index) {
           final tourism = tourismList[index];
      
-          return Turis(tourism: tourism);
+          return Turis(tourism: tourism,ontap: () {
+            Navigator.pushNamed(context, Navigation.detail.path, arguments: tourism);
+          },);
         },
       ),
     );
