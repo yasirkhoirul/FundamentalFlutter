@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:tourism_app/model/tourism.dart';
+import 'package:provider/provider.dart';
+import 'package:tourism_app/provider/detail/bookmark_provider.dart';
 import 'package:tourism_app/screen/home/tourism_card_widget.dart';
 import 'package:tourism_app/static/navigation_route.dart';
 
-class BookmarkScreen extends StatelessWidget{
+class BookmarkScreen extends StatelessWidget {
   const BookmarkScreen({super.key});
   @override
   Widget build(BuildContext context) {
@@ -12,15 +13,23 @@ class BookmarkScreen extends StatelessWidget{
       appBar: AppBar(
         title: const Text("Bookmark List"),
       ),
-      body: ListView.builder(itemBuilder: 
-        (context, index) {
-          final tourism = bookmark[index];
-          return TourismCard(tourism: tourism, onTap: (){
-            Navigator.pushNamed(context, NavigationRoute.detailRoute.name,arguments: tourism);
-          });
-        },
-        itemCount: bookmark.length,
-       ),
+      body: Consumer<BookmarkProvider>(builder: (context, value, child) {
+        final bookmarklist = value.bookmark;
+        return switch (bookmarklist.isEmpty) {
+          true => const Center(
+              child: Text("no bookmark"),
+            ),
+          _ => ListView.builder(
+              itemBuilder: (context, index) => TourismCard(
+                tourism: bookmarklist[index],
+                onTap: () => Navigator.pushNamed(
+                    context, NavigationRoute.detailRoute.name,
+                    arguments: bookmarklist[index]),
+              ),
+              itemCount: bookmarklist.length,
+            )
+        };
+      }),
     );
   }
 }

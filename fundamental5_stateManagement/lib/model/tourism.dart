@@ -19,7 +19,7 @@ class Tourism {
     required this.image,
   });
 }
-final List<Tourism> bookmark = [];
+
 final List<Tourism> tourismList = [
   Tourism(
     id: 1,

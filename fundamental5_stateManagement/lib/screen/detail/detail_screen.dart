@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tourism_app/model/tourism.dart';
+import 'package:provider/provider.dart';
+import 'package:tourism_app/provider/detail/bookmark_provider.dart';
 
 class DetailScreen extends StatelessWidget {
   final Tourism tourism;
@@ -59,7 +61,12 @@ class DetailScreen extends StatelessWidget {
                         tourism.like.toString(),
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
-                      Bookmarkwidget(bookmarkturis: tourism,)
+                      ChangeNotifierProvider(
+                        create: (context) => BookmarkIconprovider(),
+                        child: Bookmarkwidget(
+                          bookmarkturis: tourism,
+                        ),
+                      )
                     ],
                   ),
                 ],
@@ -79,7 +86,7 @@ class DetailScreen extends StatelessWidget {
 
 class Bookmarkwidget extends StatefulWidget {
   final Tourism bookmarkturis;
-  const Bookmarkwidget({super.key,required this.bookmarkturis});
+  const Bookmarkwidget({super.key, required this.bookmarkturis});
   @override
   State<StatefulWidget> createState() {
     // TODO: implement createState
@@ -88,35 +95,57 @@ class Bookmarkwidget extends StatefulWidget {
 }
 
 class _Bookmarkwidget extends State<Bookmarkwidget> {
-  late bool iscklicked;
   @override
   void initState() {
     // TODO: implement initState
-    final bookmarkinlist = bookmark.where((element)=> element.id == widget.bookmarkturis.id );
-    if(bookmarkinlist.isEmpty){
-      iscklicked =  false;
-    }else{
-      iscklicked = true;
-    }
+    final bookmarklist = context.read<BookmarkProvider>();
+    final bookmarkicons = context.read<BookmarkIconprovider>();
+
+    // memanfaatkan Future.microtask untuk menjalankan aksi mengubah state di
+    // Provider atau yang berhubungan dengan proses asinkron.
+    // Method microtask ini akan segera dijalankan setelah proses sinkron dieksekusi. Hal ini dapat
+    // menjaga jalannya kode sinkron dan menghindari potensi terjadinya error saat ada proses asinkron.
+    Future.microtask(
+      () {
+        final tourismlist =
+            bookmarklist.checkBookmark(widget.bookmarkturis); //melakukan check
+        bookmarkicons.setisbookmarked =
+            tourismlist; //mengisi state icon dengan hasil diatas
+      },
+    );
 
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
     return IconButton(
-        onPressed: () {
-          setState(() {
-            if(iscklicked){
-              bookmark.removeWhere((element) => element.id == widget.bookmarkturis.id,);
-            }else{
-              bookmark.add(widget.bookmarkturis);
-            }
-            iscklicked = !iscklicked;
-          });
-        },
-        icon: iscklicked
-            ? const Icon(Icons.bookmark)
-            : const Icon(Icons.bookmark_outline));
+      onPressed: () {
+        final bookmarklistprovider = context.read<BookmarkProvider>();
+        final bookmarkiconprovider = context.read<BookmarkIconprovider>();
+        final isbookamrk = bookmarkiconprovider.isbookmarked;
+        if (isbookamrk) {
+          bookmarklistprovider.removebookmark(widget.bookmarkturis);
+        } else {
+          bookmarklistprovider.addbookmark(widget.bookmarkturis);
+        }
+        bookmarkiconprovider.setisbookmarked = !isbookamrk;
+      },
+      icon: Icon(context.watch<BookmarkIconprovider>().isbookmarked
+          ? Icons.bookmark
+          : Icons.bookmark_outline),
+    );
+  }
+}
+
+class BookmarkIconprovider extends ChangeNotifier {
+  bool _isbookmarked = false;
+
+  bool get isbookmarked => _isbookmarked;
+
+  set setisbookmarked(bool data) {
+    _isbookmarked = data;
+    notifyListeners();
   }
 }
