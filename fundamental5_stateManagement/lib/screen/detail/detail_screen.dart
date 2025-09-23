@@ -1,15 +1,33 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:logger/web.dart';
+import 'package:tourism_app/api/data/apiservice.dart';
 import 'package:tourism_app/api/model/tourism.dart';
 import 'package:provider/provider.dart';
 import 'package:tourism_app/provider/detail/bookmark_provider.dart';
 
-class DetailScreen extends StatelessWidget {
-  final Tourism tourism;
+class DetailScreen extends StatefulWidget {
+  final int idtourism;
 
   const DetailScreen({
     super.key,
-    required this.tourism,
+    required this.idtourism,
   });
+
+  @override
+  State<DetailScreen> createState() => _DetailScreenState();
+}
+
+class _DetailScreenState extends State<DetailScreen> {
+  late Future<Detialtourism> dataapi;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    dataapi = Apiservice().getDetailTOurism(widget.idtourism);
+    
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,69 +35,92 @@ class DetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Tourism Detail"),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Image.network(
-                tourism.image,
-                fit: BoxFit.cover,
-              ),
-              const SizedBox.square(dimension: 16),
-              // todo-09: change the text style
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          tourism.name,
-                          style: Theme.of(context).textTheme.headlineLarge,
+      body: FutureBuilder(
+          future: dataapi,
+          builder: (context, snapshot) {
+            return switch (snapshot.connectionState) {
+            
+              ConnectionState.waiting => const Center(child: CircularProgressIndicator()),
+              ConnectionState.done => () {
+                  if (snapshot.hasError) {
+                    return Text("${snapshot.error}");
+                  } else {
+                    
+                    final place = snapshot.data!.place;
+                    return SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            Image.network(
+                              place.image,
+                              fit: BoxFit.cover,
+                            ),
+                            const SizedBox.square(dimension: 16),
+                            // todo-09: change the text style
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        place.name,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headlineLarge,
+                                      ),
+                                      Text(
+                                        place.address,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelLarge
+                                            ?.copyWith(
+                                                fontWeight: FontWeight.w400),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.favorite,
+                                      color: Colors.pink,
+                                    ),
+                                    const SizedBox.square(dimension: 4),
+                                    Text(
+                                      place.like.toString(),
+                                      style:
+                                          Theme.of(context).textTheme.bodyLarge,
+                                    ),
+                                    ChangeNotifierProvider(
+                                      create: (context) =>
+                                          BookmarkIconprovider(),
+                                      child: Bookmarkwidget(
+                                        bookmarkturis: place,
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox.square(dimension: 16),
+                            Text(
+                              place.description,
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          ],
                         ),
-                        Text(
-                          tourism.address,
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelLarge
-                              ?.copyWith(fontWeight: FontWeight.w400),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.favorite,
-                        color: Colors.pink,
                       ),
-                      const SizedBox.square(dimension: 4),
-                      Text(
-                        tourism.like.toString(),
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                      ChangeNotifierProvider(
-                        create: (context) => BookmarkIconprovider(),
-                        child: Bookmarkwidget(
-                          bookmarkturis: tourism,
-                        ),
-                      )
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox.square(dimension: 16),
-              Text(
-                tourism.description,
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-            ],
-          ),
-        ),
-      ),
+                    );
+                  }
+                }(),
+              _ => const SizedBox(),
+            };
+          }),
     );
   }
 }

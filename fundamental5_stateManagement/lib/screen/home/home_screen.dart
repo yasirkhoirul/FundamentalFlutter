@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:tourism_app/api/data/apiservice.dart';
 import 'package:tourism_app/api/model/tourism.dart';
@@ -16,19 +18,20 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     // TODO: implement initState
-    dataapi = Apiservice().getResponseTourism();
     super.initState();
+    dataapi = Apiservice().getResponseTourism();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Tourism List"),
+        title:  Text("${dataapi}"),
       ),
       body: FutureBuilder(
         future: dataapi,
         builder: (context, snapshot) {
+          log("masuk future");
           switch (snapshot.connectionState) {
             case ConnectionState.waiting:
               return const Center(
@@ -42,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 return ListView.builder(
                   itemCount: data.length,
                   itemBuilder: (context, index) {
-                    final tourism = data[index];
+                    final Tourism tourism = data[index];
 
                     return TourismCard(
                       tourism: tourism,
@@ -50,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.pushNamed(
                           context,
                           NavigationRoute.detailRoute.name,
-                          arguments: tourism,
+                          arguments: tourism.id,
                         );
                       },
                     );
@@ -58,8 +61,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               }
 
-            default:
-              return const SizedBox();
+            default :
+              return const SizedBox(
+                child: Text("tidak ada hasil"),
+              );
           }
         },
       ),

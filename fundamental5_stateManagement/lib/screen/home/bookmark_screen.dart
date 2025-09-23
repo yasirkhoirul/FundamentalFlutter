@@ -24,7 +24,7 @@ class BookmarkScreen extends StatelessWidget {
                 tourism: bookmarklist[index],
                 onTap: () => Navigator.pushNamed(
                     context, NavigationRoute.detailRoute.name,
-                    arguments: bookmarklist[index]),
+                    arguments: bookmarklist[index].id),
               ),
               itemCount: bookmarklist.length,
             )

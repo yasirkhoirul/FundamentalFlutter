@@ -1,3 +1,7 @@
+
+
+import 'package:logger/logger.dart';
+
 class Tourism {
   final int id;
   final String name;
@@ -25,7 +29,7 @@ class Tourism {
         name: json['name'],
         description: json['description'],
         address: json['address'],
-        longitude: json['longtitude'],
+        longitude: json['longitude'],
         latitude: json['latitude'],
         like: json['like'],
         image: json['image']);
@@ -35,7 +39,7 @@ class Tourism {
 class Tourismlist {
   final bool error;
   final String message;
-  final double count;
+  final int count;
   final List<Tourism> place;
 
   Tourismlist(
@@ -49,10 +53,25 @@ class Tourismlist {
         error: json['error'],
         message: json['message'],
         count: json['count'],
-        place: json['place'] != null
-            ? List<Tourism>.from(
-                json["place"]!.map((data) => Tourism.fromJson(data)))
-            : <Tourism>[]);
+        place: json['places']!= null
+         ? List<Tourism>.from(json["places"]!.map((x) => Tourism.fromJson(x)))
+         : <Tourism>[],
+        );
+  }
+}
+
+class Detialtourism {
+  final bool error;
+  final String message;
+  final Tourism place;
+
+  Detialtourism({required this.error,required this.message, required this.place});
+
+  factory Detialtourism.fromJson(Map<String,dynamic> data){
+    Logger().d(data["place"]);
+    final datas = Detialtourism(error: data["error"], message: data["message"], place: Tourism.fromJson(data['place']));
+    Logger().d(datas.message);
+    return datas;
   }
 }
 
