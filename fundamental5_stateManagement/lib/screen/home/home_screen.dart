@@ -1,10 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:tourism_app/model/tourism.dart';
+import 'package:tourism_app/api/data/apiservice.dart';
+import 'package:tourism_app/api/model/tourism.dart';
 import 'package:tourism_app/screen/home/tourism_card_widget.dart';
 import 'package:tourism_app/static/navigation_route.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late Future<Tourismlist> dataapi;
+  @override
+  void initState() {
+    // TODO: implement initState
+    dataapi = Apiservice().getResponseTourism();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,21 +26,41 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Tourism List"),
       ),
-      body: ListView.builder(
-        itemCount: tourismList.length,
-        itemBuilder: (context, index) {
-          final tourism = tourismList[index];
-
-          return TourismCard(
-            tourism: tourism,
-            onTap: () {
-              Navigator.pushNamed(
-                context,
-                NavigationRoute.detailRoute.name,
-                arguments: tourism,
+      body: FutureBuilder(
+        future: dataapi,
+        builder: (context, snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return const Center(
+                child: CircularProgressIndicator(),
               );
-            },
-          );
+            case ConnectionState.done:
+              if (snapshot.hasError) {
+                return Text("${snapshot.error}");
+              } else {
+                List data = snapshot.data!.place;
+                return ListView.builder(
+                  itemCount: data.length,
+                  itemBuilder: (context, index) {
+                    final tourism = data[index];
+
+                    return TourismCard(
+                      tourism: tourism,
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          NavigationRoute.detailRoute.name,
+                          arguments: tourism,
+                        );
+                      },
+                    );
+                  },
+                );
+              }
+
+            default:
+              return const SizedBox();
+          }
         },
       ),
     );

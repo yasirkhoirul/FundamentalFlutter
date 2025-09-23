@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tourism_app/model/tourism.dart';
+import 'package:tourism_app/api/model/tourism.dart';
 
 class TourismCard extends StatelessWidget {
   final Tourism tourism;
